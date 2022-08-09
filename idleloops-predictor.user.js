@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         IdleLoops Predictor Makro
+// @name         IdleLoops Predictor Makro Legacy Support v2.1.0
 // @namespace    https://github.com/MakroCZ/
 // @downloadURL  https://raw.githubusercontent.com/MakroCZ/IdleLoops-Predictor/master/idleloops-predictor.user.js
 // @version      2.1.0
