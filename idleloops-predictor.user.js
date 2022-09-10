@@ -2,7 +2,7 @@
 // @name         IdleLoops Predictor Makro
 // @namespace    https://github.com/MakroCZ/
 // @downloadURL  https://raw.githubusercontent.com/MakroCZ/IdleLoops-Predictor/master/idleloops-predictor.user.js
-// @version      2.3.0
+// @version      2.3.1
 // @description  Predicts the amount of resources spent and gained by each action in the action list. Valid as of IdleLoops v.85/Omsi6.
 // @author       Koviko <koviko.net@gmail.com>
 // @match        https://lloyd-delacroix.github.io/omsi-loops/
@@ -11,7 +11,7 @@
 // @run-at       document-idle
 // ==/UserScript==
 window.eval(`
-/** @namespace */
+/** @namespace \`*/
 const Koviko = {
   /**
    * IdleLoops view
@@ -565,27 +565,44 @@ const Koviko = {
           document.getElementById("nextActionsListContainer").style.width=(tmpVal-120)+"px";
       });
 
-      \$('#preditorSettings').append(\`<br /><input id='repeatPrediction' type='checkbox'><label for='repeatPrediction'>" Repeat last action on list" applies to the Predictor</label>\`);
+      \$('#preditorSettings').append(\`<br /><input id='repeatPrediction' type='checkbox'><label for='repeatPrediction'> "Repeat last action on list" applies to the Predictor</label>\`);
       \$('#repeatPrediction').change(function() {
           let tmpVal=\$(this).is(':checked');
           localStorage.setItem('repeatPrediction',tmpVal );       
       });
 
       \$('#actionChanges').children('div:nth-child(2)').append("<select id='trackedStat' class='button'></select>");
-      \$('#trackedStat').append("<option value=soul>(R) Soulstones</option>");
+      \$('#trackedStat').append("<option value=Rsoul hidden=''>(R) Soulstones</option>");
+      \$('#trackedStat').append("<option value=Ract hidden=''>(R) Final Actions</option>");
+      \$('#trackedStat').append("<option value=Rsurvey hidden=''>(R) Surveys</option>");
       for (let i in skillList) {
-        if (skills[skillList[i]].exp>0) {
-          \$('#trackedStat').append("<option value="+skillList[i].toLowerCase()+">(S) "+skillList[i]+"</option>");
-        }
+        \$('#trackedStat').append("<option value=S"+skillList[i].toLowerCase()+" hidden=''>(S) "+skillList[i]+"</option>");
       }
       for (let i in statList) {
-        \$('#trackedStat').append("<option value="+statList[i]+">(T) "+_txt('stats>'+statList[i]+'>long_form')+"</option>");
+        \$('#trackedStat').append("<option value=T"+statList[i]+" >(T) "+_txt('stats>'+statList[i]+'>long_form')+"</option>");
       }
       \$('#trackedStat').change(function() {
         let tmpVal=\$(this).val();
         localStorage.setItem('trackedStat',tmpVal );
         view.updateNextActions();
       });
+      this.updateTrackedList();
+    }
+
+    updateTrackedList() {
+      let statisticList = $("#trackedStat").children();
+        for (let i=0;i<statisticList.length;i++) {
+          switch(statisticList[i].value.charAt(0)) {
+            case 'R':
+              statisticList[i].hidden=((statisticList[i].value=="Rsurvey") && (getExploreSkill()==0));
+              break;
+            case 'S':
+              statisticList[i].hidden=(!skills[statisticList[i].value.charAt(1).toUpperCase()+statisticList[i].value.slice(2)].exp>0);
+              break;
+            case 'T':
+              break;
+          }
+        }
     }
 
     /**
@@ -1278,6 +1295,7 @@ const Koviko = {
         'Explorers Guild':{ affected:['map','completedMap'],
           canStart:(input) => (input.guild==''),
           effect:(r,k) => {
+          r.submittedMap=r.completedMap;
           r.completedMap=0;
           r.guild='explorer';
           if (r.map==0) {
@@ -1443,6 +1461,7 @@ const Koviko = {
      */
     preUpdate(container) {
       this.update.totalDisplay = this.totalDisplay.innerHTML;
+      this.updateTrackedList();
       this.update.pre = container.querySelectorAll('ul.koviko');
       this.update.pre.forEach((element) => element.classList.add('expired'));
     }
@@ -1529,11 +1548,17 @@ const Koviko = {
       //Statistik parammeters
       let statisticType=\$('#trackedStat').val();
       let statisticStart=0;
-      if (state.talents[statisticType]>=0 ) {
-        statisticStart=state.talents[statisticType];
-      } else {
-        statisticStart=state.skills[statisticType];
+      switch(statisticType.charAt(0)) {
+        case 'R':
+          break;
+        case 'S':
+          statisticStart=state.skills[statisticType.slice(1)];
+          break;
+        case 'T':
+          statisticStart=state.talents[statisticType.slice(1)];
+          break;
       }
+
       // Initialize all affected resources
       affected.forEach(x => state.resources[x] || (state.resources[x] = 0));
 
@@ -1738,18 +1763,31 @@ const Koviko = {
       let newStatisticValue=0;
       let legend="";
 
-      if (statisticType=="soul") {
-        let dungeonEquilibrium = Math.min(Math.sqrt(total / 200000),1);
-        let dungeonSS = state.resources.soul - (state.resources.nonDungeonSS || 0);
-        newStatisticValue = ((state.resources.nonDungeonSS || 0) + dungeonEquilibrium * (dungeonSS || 0)) / totalTicks * 60;
-        legend="SS";
-      } else if (state.talents[statisticType]>=0) {
-         newStatisticValue=(state.talents[statisticType]-statisticStart)/ totalTicks * 60;
-         legend=_txt('stats>'+statisticType+'>short_form');
-      } else {
-         newStatisticValue=(state.skills[statisticType]-statisticStart)/ totalTicks * 60;
-         legend=this.getShortSkill(statisticType);
+      switch(statisticType.charAt(0)) {
+        case 'R':
+          if (statisticType=="Rsoul") {
+            let dungeonEquilibrium = Math.min(Math.sqrt(total / 200000),1);
+            let dungeonSS = state.resources.soul - (state.resources.nonDungeonSS || 0);
+            newStatisticValue = ((state.resources.nonDungeonSS || 0) + dungeonEquilibrium * (dungeonSS || 0)) / totalTicks * 60;
+            legend="SS";
+          } else if (statisticType=="Ract") {
+            newStatisticValue= loop / totalTicks * 60;
+            legend=actions[finalIndex].name;
+          } else if (statisticType=="Rsurvey") {
+            newStatisticValue= getExploreSkill()* (state.resources.completedMap+2*state.resources.submittedMap)  / totalTicks * 60;
+            legend="Survey";
+          }
+          break;
+        case 'S':
+          newStatisticValue=(state.skills[statisticType.slice(1)]-statisticStart)/ totalTicks * 60;
+          legend=this.getShortSkill(statisticType.slice(1));
+          break;
+        case 'T':
+          newStatisticValue=(state.talents[statisticType.slice(1)]-statisticStart)/ totalTicks * 60;
+          legend=_txt('stats>'+statisticType.slice(1)+'>short_form');
+          break;
       }
+
 
       container && (this.totalDisplay.innerHTML = intToString(total) + " | " + totalTime + " | " );
       container && (this.statisticDisplay.innerHTML = intToString(newStatisticValue) +" "+legend+ "/min");

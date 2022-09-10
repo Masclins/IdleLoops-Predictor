@@ -2589,6 +2589,7 @@ creatorCache['Explorers Guild'].effect.game=\`finish() {
         view.requestUpdate("adjustGoldCost", {varName: "Excursion", cost: Action.Excursion.goldCost()});
     }\`;
 creatorCache['Explorers Guild'].effect.pred=\`(r,k) => {
+          r.submittedMap=r.completedMap;
           r.completedMap=0;
           r.guild='explorer';
           if (r.map==0) {
