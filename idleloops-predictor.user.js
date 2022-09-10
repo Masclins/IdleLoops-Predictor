@@ -1790,7 +1790,7 @@ const Koviko = {
 
 
       container && (this.totalDisplay.innerHTML = intToString(total) + " | " + totalTime + " | " );
-      container && (this.statisticDisplay.innerHTML = intToString(newStatisticValue) +" "+legend+ "/min");
+      container && (this.statisticDisplay.innerHTML = intToString(newStatisticValue||0) +" "+legend+ "/min");
       if (this.resourcePerMinute>newStatisticValue) {
         this.statisticDisplay.style='color: #FF0000';
       } else {
