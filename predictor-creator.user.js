@@ -2837,7 +2837,8 @@ creatorCache['Secret Trial'].loop.tick.game=\`function(offset) {
 }\`;
 creatorCache['Secret Trial'].loop.tick.pred=\`(p, a, s, k, r) => offset => {
             const floor = Math.floor(p.completed / a.segments + .0000001);
-            return floor in trials[a.trialNum] ? h.getTeamCombat(r, k) * h.getStatProgress(p, a, s, offset) * Math.sqrt(1 + trials[a.trialNum][floor].completed / 200) : 0;
+            if (!p.progress) p.teamCombat = h.getTeamCombat(r, k);
+            return floor in trials[a.trialNum] ? p.teamCombat * h.getStatProgress(p, a, s, offset) * Math.sqrt(1 + trials[a.trialNum][floor].completed / 200) : 0;
           }\`;
 creatorCache['Secret Trial'].loop.end={};
 creatorCache['Secret Trial'].loop.end.game=\`finish() {
