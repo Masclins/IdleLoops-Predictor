@@ -2047,7 +2047,7 @@ creatorCache['Build Housing'].canStart.game=\`canStart() {
         return guild === "Crafting" && towns[4].getLevel("Citizen") >= 100 && resources.houses < maxHouses;
     }\`;
 creatorCache['Build Housing'].canStart.pred=\`(input) => {
-          return (input.houses||0) < Math.floor(h.getGuildRankBonus(input.crafts || 0) * (1 + Math.min( getSkillLevelFromExp(skills.Spatiomancy.exp),500) * .01));
+          return ((input.guild=='crafting') && ((input.houses||0) < Math.floor(h.getGuildRankBonus(input.crafts || 0) * (1 + Math.min( getSkillLevelFromExp(skills.Spatiomancy.exp),500) * .01))));
         }\`;
 creatorCache['Build Housing'].effect={};
 creatorCache['Build Housing'].effect.skills={};	

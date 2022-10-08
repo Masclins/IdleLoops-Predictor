@@ -2,7 +2,7 @@
 // @name         IdleLoops Predictor Makro
 // @namespace    https://github.com/MakroCZ/
 // @downloadURL  https://raw.githubusercontent.com/MakroCZ/IdleLoops-Predictor/master/idleloops-predictor.user.js
-// @version      2.3.3
+// @version      2.3.4
 // @description  Predicts the amount of resources spent and gained by each action in the action list. Valid as of IdleLoops v.85/Omsi6.
 // @author       Koviko <koviko.net@gmail.com>
 // @match        https://lloyd-delacroix.github.io/omsi-loops/
@@ -1148,7 +1148,7 @@ const Koviko = {
         'Seek Citizenship':{ affected:['']},
         'Build Housing':{ affected:[''],
           canStart:(input) => {
-          return (input.houses||0) < Math.floor(h.getGuildRankBonus(input.crafts || 0) * (1 + Math.min( getSkillLevelFromExp(skills.Spatiomancy.exp),500) * .01));
+          return ((input.guild=='crafting') && ((input.houses||0) < Math.floor(h.getGuildRankBonus(input.crafts || 0) * (1 + Math.min( getSkillLevelFromExp(skills.Spatiomancy.exp),500) * .01))));
         },
           effect:(r) => (r.houses = (r.houses ? r.houses+1 : 1))},
         'Collect Taxes':{ affected:[''],
