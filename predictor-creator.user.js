@@ -2756,6 +2756,7 @@ creatorCache['Invest'].effect.game=\`finish() {
     }\`;
 creatorCache['Invest'].effect.pred=\`(r,k)=> {
            k.mercantilism+=100;
+           r.invested=r.gold;
            r.gold=0;
         }\`;
 creatorCache['Collect Interest']={};

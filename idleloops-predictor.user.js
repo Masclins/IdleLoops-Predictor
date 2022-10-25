@@ -2,7 +2,7 @@
 // @name         IdleLoops Predictor Makro
 // @namespace    https://github.com/MakroCZ/
 // @downloadURL  https://raw.githubusercontent.com/MakroCZ/IdleLoops-Predictor/master/idleloops-predictor.user.js
-// @version      2.3.4
+// @version      2.3.5
 // @description  Predicts the amount of resources spent and gained by each action in the action list. Valid as of IdleLoops v.85/Omsi6.
 // @author       Koviko <koviko.net@gmail.com>
 // @match        https://lloyd-delacroix.github.io/omsi-loops/
@@ -575,6 +575,7 @@ const Koviko = {
       \$('#trackedStat').append("<option value=Rsoul hidden=''>(R) Soulstones</option>");
       \$('#trackedStat').append("<option value=Ract hidden=''>(R) Final Actions</option>");
       \$('#trackedStat').append("<option value=Rsurvey hidden=''>(R) Surveys</option>");
+      \$('#trackedStat').append("<option value=Rinvest hidden=''>(R) Investment</option>");
       for (let i in skillList) {
         \$('#trackedStat').append("<option value=S"+skillList[i].toLowerCase()+" hidden=''>(S) "+skillList[i]+"</option>");
       }
@@ -594,7 +595,13 @@ const Koviko = {
         for (let i=0;i<statisticList.length;i++) {
           switch(statisticList[i].value.charAt(0)) {
             case 'R':
-              statisticList[i].hidden=((statisticList[i].value=="Rsurvey") && (getExploreSkill()==0));
+              if (statisticList[i].value=="Rsurvey") {
+                statisticList[i].hidden= (getExploreSkill()==0);
+              } else if (statisticList[i].value=="Rinvest") {
+                statisticList[i].hidden= (goldInvested==0);
+              } else {
+                statisticList[i].hidden=false;
+              }
               break;
             case 'S':
               statisticList[i].hidden=(!skills[statisticList[i].value.charAt(1).toUpperCase()+statisticList[i].value.slice(2)].exp>0);
@@ -1339,6 +1346,7 @@ const Koviko = {
           canStart:(input)=>(input.gold>0),
           effect:(r,k)=> {
            k.mercantilism+=100;
+           r.invested=r.gold;
            r.gold=0;
         }},
         'Collect Interest':{ affected:['gold'],
@@ -1558,6 +1566,7 @@ const Koviko = {
       //Statistik parammeters
       let statisticType=(\$('#trackedStat').val()||"Rsoul");
       let statisticStart=0;
+      let newStatisticValue=0;
       switch(statisticType.charAt(0)) {
         case 'R':
           break;
@@ -1770,7 +1779,6 @@ const Koviko = {
 
       let totalTime = ('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2) + "." + ms;
 
-      let newStatisticValue=0;
       let legend="";
 
       switch(statisticType.charAt(0)) {
@@ -1784,8 +1792,11 @@ const Koviko = {
             newStatisticValue= loop / totalTicks * 60;
             legend=actions[finalIndex].name;
           } else if (statisticType=="Rsurvey") {
-            newStatisticValue= getExploreSkill()* (state.resources.completedMap+2*state.resources.submittedMap)  / totalTicks * 60;
+            newStatisticValue= getExploreSkill()* (state.resources.completedMap+3*state.resources.submittedMap)  / totalTicks * 60;
             legend="Survey";
+          } else if (statisticType=="Rinvest") {
+            newStatisticValue= state.resources.invested / totalTicks * 60;
+            legend="Investment";
           }
           break;
         case 'S':
