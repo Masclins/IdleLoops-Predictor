@@ -1051,7 +1051,12 @@ const Koviko = {
 
             return attempt < 1 ? ( getSkillLevelFromExp(k.magic) * h.getStatProgress(p, a, s, offset)) : 0;
           },
-          effect:{loop:(r) => r.mind++}
+          effect:{loop:(r) => {
+            r.mind++;
+            let ssCost = Action.ImbueMind.goldCost();
+            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.soul -= ssCost;
+          }}
         }},
         'Imbue Body':{ affected:['body'],
           canStart:true, loop: {
