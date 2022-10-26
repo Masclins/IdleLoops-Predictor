@@ -930,7 +930,12 @@ const Koviko = {
 
             return attempt < 1 ? ( getSkillLevelFromExp(k.dark) * h.getStatProgress(p, a, s, offset)) / (1 - towns[1].getLevel("Witch") * .005) : 0;
           },
-          effect:{loop:(r) => r.ritual++}
+          effect:{loop:(r) => {
+            r.ritual++;
+            let ssCost = Action.DarkRitual.goldCost();
+            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.soul -= ssCost;
+          }}
         }},
         'Continue On':{ affected:[''],
           effect:(r) => r.town = 2},
