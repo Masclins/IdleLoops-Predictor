@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name     Predictor Creator
-// @version  1.1
+// @version  1.1.1
 // @description Author script for the predictor. To use: 1.call crUpdatePredictions in the console 2. copy the result into the script, replacing everything between the "CACHE File" markers 3. Fix any TODOs in the copied cache, those are actions that changed and (maybe) need attention, if a function shouldn't be in the output replace it with '' (or\`\`) 4. call crOutputPredictions 5. paste the output into the main script, replacing the content of the "predictions" object EXEPT those after "SPECIAL ACTIONS" those are special cases that should be done by hand  // @match https://lloyd-delacroix.github.io/omsi-loops/
 // @author Tomnar <Tomnar#4672 on discord>
 // @match https://lloyd-delacroix.github.io/omsi-loops/
@@ -1040,7 +1040,12 @@ creatorCache['Dark Ritual'].loop.loop.game=\`loopsFinished() {
         view.requestUpdate("updateSoulstones", null);
         view.requestUpdate("adjustGoldCost", {varName: "DarkRitual", cost: this.goldCost()});
     }\`;
-creatorCache['Dark Ritual'].loop.loop.pred=\`(r) => r.ritual++\`;
+creatorCache['Dark Ritual'].loop.loop.pred=\`(r) => {
+            r.ritual++;
+            let ssCost = Action.DarkRitual.goldCost();
+            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.soul -= ssCost;
+          }\`;
 creatorCache['Dark Ritual'].loop.max=\`() => 1\`;
 creatorCache['Continue On']={};
 creatorCache['Continue On'].affected=[''];
@@ -1656,7 +1661,12 @@ creatorCache['Imbue Mind'].loop.loop.game=\`loopsFinished() {
         view.requestUpdate("updateSoulstones", null);
         view.requestUpdate("adjustGoldCost", {varName: "ImbueMind", cost: this.goldCost()});
     }\`;
-creatorCache['Imbue Mind'].loop.loop.pred=\`(r) => r.mind++\`;
+creatorCache['Imbue Mind'].loop.loop.pred=\`(r) => {
+            r.mind++;
+            let ssCost = Action.ImbueMind.goldCost();
+            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.soul -= ssCost;
+          }\`;
 creatorCache['Imbue Mind'].loop.max=\`() => 1\`;
 creatorCache['Imbue Body']={};
 creatorCache['Imbue Body'].affected=['body'];
@@ -2127,7 +2137,12 @@ creatorCache['Great Feast'].loop.loop.game=\`loopsFinished() {
         view.requestUpdate("updateSoulstones", null);
         view.requestUpdate("adjustGoldCost", {varName: "GreatFeast", cost: this.goldCost()});
     }\`;
-creatorCache['Great Feast'].loop.loop.pred=\`(r) => r.feast++\`;
+creatorCache['Great Feast'].loop.loop.pred=\`effect:{loop:(r) => {
+            r.feast++;
+            let ssCost = Action.GreatFeast.goldCost();
+            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.soul -= ssCost;
+          }\`;
 creatorCache['Great Feast'].loop.max=\`() => 1\`;
 creatorCache['Fight Frost Giants']={};
 creatorCache['Fight Frost Giants'].affected=['giants'];
