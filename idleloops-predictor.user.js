@@ -1189,7 +1189,12 @@ const Koviko = {
           tick:(p, a, s, k) => offset => {
             return  getSkillLevelFromExp(k.practical) * h.getStatProgress(p, a, s, offset);
           },
-          effect:{loop:(r) => r.feast++}
+          effect:{loop:(r) => {
+            r.feast++;
+            let ssCost = Action.GreatFeast.goldCost();
+            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.soul -= ssCost;
+          }}
         }},
         'Fight Frost Giants':{ affected:['giants'],
           canStart:(input) => (input.pegasus), loop: {
