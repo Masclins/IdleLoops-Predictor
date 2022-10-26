@@ -930,7 +930,12 @@ const Koviko = {
 
             return attempt < 1 ? ( getSkillLevelFromExp(k.dark) * h.getStatProgress(p, a, s, offset)) / (1 - towns[1].getLevel("Witch") * .005) : 0;
           },
-          effect:{loop:(r) => r.ritual++}
+          effect:{loop:(r) => {
+            r.ritual++;
+            let ssCost = Action.DarkRitual.goldCost();
+            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.soul -= ssCost;
+          }}
         }},
         'Continue On':{ affected:[''],
           effect:(r) => r.town = 2},
@@ -1051,7 +1056,12 @@ const Koviko = {
 
             return attempt < 1 ? ( getSkillLevelFromExp(k.magic) * h.getStatProgress(p, a, s, offset)) : 0;
           },
-          effect:{loop:(r) => r.mind++}
+          effect:{loop:(r) => {
+            r.mind++;
+            let ssCost = Action.ImbueMind.goldCost();
+            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.soul -= ssCost;
+          }}
         }},
         'Imbue Body':{ affected:['body'],
           canStart:true, loop: {
@@ -1179,7 +1189,12 @@ const Koviko = {
           tick:(p, a, s, k) => offset => {
             return  getSkillLevelFromExp(k.practical) * h.getStatProgress(p, a, s, offset);
           },
-          effect:{loop:(r) => r.feast++}
+          effect:{loop:(r) => {
+            r.feast++;
+            let ssCost = Action.GreatFeast.goldCost();
+            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.soul -= ssCost;
+          }}
         }},
         'Fight Frost Giants':{ affected:['giants'],
           canStart:(input) => (input.pegasus), loop: {
