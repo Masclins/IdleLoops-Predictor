@@ -956,7 +956,7 @@ const Koviko = {
         'Dark Magic':{ affected:['rep'],
           canStart:(input) => (input.rep <= 0),
           effect:(r, k) => (r.rep--, k.dark += Math.floor(100 * (1 + buffs.Ritual.amt / 100)))},
-        'Dark Ritual':{ affected:['ritual'],
+        'Dark Ritual':{ affected:['ritual','soul'],
           canStart:(input) => (input.rep <= -5), loop: {
           max:() => 1,
           cost:(p) => segment => 1000000 * (segment * 2 + 1),
@@ -1082,7 +1082,7 @@ const Koviko = {
           r.temp11 = (r.temp11 || 0) + 1;
           r.artifacts += r.temp11 <= towns[3].goodArtifacts ? 1 : 0;
         }},
-        'Imbue Mind':{ affected:['mind'],
+        'Imbue Mind':{ affected:['mind','soul'],
           canStart:true, loop: {
           max:() => 1,
           cost:(p) => segment => 100000000 * (segment * 5 + 1),
@@ -1217,7 +1217,7 @@ const Koviko = {
           r.favor -= 20;
           r.pegasus = true;
         }},
-        'Great Feast':{ affected:['feast'],
+        'Great Feast':{ affected:['feast','soul'],
           canStart:(input) => (input.rep >= 100), loop: {
           max:() => 1,
           cost:(p) => segment => 1000000000 * (segment * 5 + 1),

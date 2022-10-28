@@ -1000,7 +1000,7 @@ creatorCache['Dark Magic'].effect.game=\`finish() {
     }\`;
 creatorCache['Dark Magic'].effect.pred=\`(r, k) => (r.rep--, k.dark += Math.floor(100 * (1 + buffs.Ritual.amt / 100)))\`;
 creatorCache['Dark Ritual']={};
-creatorCache['Dark Ritual'].affected=['ritual'];
+creatorCache['Dark Ritual'].affected=['ritual','soul'];
 creatorCache['Dark Ritual'].manaCost={};
 creatorCache['Dark Ritual'].manaCost.game=\`manaCost() {
         return Math.ceil(50000 * (1 - towns[1].getLevel("Witch") * 0.005));
@@ -1625,7 +1625,7 @@ creatorCache['Take Artifacts'].effect.pred=\`(r) => {
           r.artifacts += r.temp11 <= towns[3].goodArtifacts ? 1 : 0;
         }\`;
 creatorCache['Imbue Mind']={};
-creatorCache['Imbue Mind'].affected=['mind'];
+creatorCache['Imbue Mind'].affected=['mind','soul'];
 creatorCache['Imbue Mind'].canStart={};
 creatorCache['Imbue Mind'].canStart.game=\`canStart() {
         return towns[3].ImbueMindLoopCounter === 0 && checkSoulstoneSac(this.goldCost()) && getBuffLevel("Imbuement") < parseInt(document.getElementById("buffImbuementCap").value);
@@ -2106,7 +2106,7 @@ creatorCache['Pegasus'].effect.pred=\`(r) => {
           r.pegasus = true;
         }\`;
 creatorCache['Great Feast']={};
-creatorCache['Great Feast'].affected=['feast'];
+creatorCache['Great Feast'].affected=['feast','soul'];
 creatorCache['Great Feast'].canStart={};
 creatorCache['Great Feast'].canStart.game=\`canStart() {
         return resources.reputation >= 100 && towns[this.townNum].GreatFeastLoopCounter === 0 && checkSoulstoneSac(this.goldCost()) && getBuffLevel("Feast") < parseInt(document.getElementById("buffFeastCap").value);
