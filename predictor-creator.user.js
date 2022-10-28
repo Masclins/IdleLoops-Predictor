@@ -1043,7 +1043,7 @@ creatorCache['Dark Ritual'].loop.loop.game=\`loopsFinished() {
 creatorCache['Dark Ritual'].loop.loop.pred=\`(r) => {
             r.ritual++;
             let ssCost = Action.DarkRitual.goldCost();
-            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.nonDungeonSS -= ssCost;
             r.soul -= ssCost;
           }\`;
 creatorCache['Dark Ritual'].loop.max=\`() => 1\`;
@@ -1569,7 +1569,7 @@ creatorCache['Mine Soulstones'].effect.game=\`finish() {
 creatorCache['Mine Soulstones'].effect.pred=\`(r) => {
           r.temp10 = (r.temp10 || 0) + 1;
           let ssGained = r.temp10 <= towns[3].goodMineSoulstones ? h.getRewardSS(0) : 0;
-          r.nonDungeonSS = (r.nonDungeonSS || 0) + ssGained;
+          r.nonDungeonSS += ssGained;
           r.soul += ssGained;
         }\`;
 creatorCache['Hunt Trolls']={};
@@ -1664,7 +1664,7 @@ creatorCache['Imbue Mind'].loop.loop.game=\`loopsFinished() {
 creatorCache['Imbue Mind'].loop.loop.pred=\`(r) => {
             r.mind++;
             let ssCost = Action.ImbueMind.goldCost();
-            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.nonDungeonSS -= ssCost;
             r.soul -= ssCost;
           }\`;
 creatorCache['Imbue Mind'].loop.max=\`() => 1\`;
@@ -2140,7 +2140,7 @@ creatorCache['Great Feast'].loop.loop.game=\`loopsFinished() {
 creatorCache['Great Feast'].loop.loop.pred=\`effect:{loop:(r) => {
             r.feast++;
             let ssCost = Action.GreatFeast.goldCost();
-            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.nonDungeonSS -= ssCost;
             r.soul -= ssCost;
           }\`;
 creatorCache['Great Feast'].loop.max=\`() => 1\`;

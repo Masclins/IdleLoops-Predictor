@@ -968,7 +968,7 @@ const Koviko = {
           effect:{loop:(r) => {
             r.ritual++;
             let ssCost = Action.DarkRitual.goldCost();
-            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.nonDungeonSS -= ssCost;
             r.soul -= ssCost;
           }}
         }},
@@ -1068,7 +1068,7 @@ const Koviko = {
           effect:(r) => {
           r.temp10 = (r.temp10 || 0) + 1;
           let ssGained = r.temp10 <= towns[3].goodMineSoulstones ? h.getRewardSS(0) : 0;
-          r.nonDungeonSS = (r.nonDungeonSS || 0) + ssGained;
+          r.nonDungeonSS += ssGained;
           r.soul += ssGained;
         }},
         'Hunt Trolls':{ affected:['blood'], loop: {
@@ -1094,7 +1094,7 @@ const Koviko = {
           effect:{loop:(r) => {
             r.mind++;
             let ssCost = Action.ImbueMind.goldCost();
-            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.nonDungeonSS -= ssCost;
             r.soul -= ssCost;
           }}
         }},
@@ -1227,7 +1227,7 @@ const Koviko = {
           effect:{loop:(r) => {
             r.feast++;
             let ssCost = Action.GreatFeast.goldCost();
-            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.nonDungeonSS -= ssCost;
             r.soul -= ssCost;
           }}
         }},
@@ -1640,6 +1640,9 @@ const Koviko = {
 
       // Initialize all affected resources
       affected.forEach(x => state.resources[x] || (state.resources[x] = 0));
+      if (affected.includes('soul')) {
+        state.resources.nonDungeonSS = (state.resources.nonDungeonSS || 0)
+      } 
 
       // Initialize the display element for the total amount of mana used
       if(container){
@@ -1849,8 +1852,8 @@ const Koviko = {
         case 'R':
           if (Koviko.options.trackedStat[1]=="soul") {
             let dungeonEquilibrium = Math.min(Math.sqrt(total / 200000),1);
-            let dungeonSS = state.resources.soul - (state.resources.nonDungeonSS || 0);
-            newStatisticValue = ((state.resources.nonDungeonSS || 0) + dungeonEquilibrium * (dungeonSS || 0)) / totalTicks * 60;
+            let dungeonSS = state.resources.soul - state.resources.nonDungeonSS;
+            newStatisticValue = (state.resources.nonDungeonSS + dungeonEquilibrium * (dungeonSS || 0)) / totalTicks * 60;
             legend="SS";
           } else if (Koviko.options.trackedStat[1]=="act") {
             newStatisticValue= loop / totalTicks * 60;
