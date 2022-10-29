@@ -412,6 +412,17 @@ const Koviko = {
           \$('#trackedStat').val('Rsoul');
           Koviko.options.trackedStat=['R','soul']; 
         }
+
+        Koviko.options.slowMode=localStorage.getItem("slowMode")=='true';
+        if (Koviko.options.slowMode!==null) {
+          \$('#slowMode').prop( "checked", Koviko.options.slowMode);
+        }
+
+        Koviko.options.slowTimer=(localStorage.getItem('slowTimer')||1);
+        if (Koviko.options.slowTimer !== null) {
+          \$('#updateTimePrecision').val(Koviko.options.slowTimer);
+        }
+
       }
       // Prepare \`updateNextActions\` to be hooked
       if (!view._updateNextActions) {
@@ -596,6 +607,22 @@ const Koviko = {
         view.updateNextActions();
       });
       this.updateTrackedList();
+
+      \$('#preditorSettings').append(\`<br /><input id='slowMode' type='checkbox'><label for='slowMode'> Only update the predictor every <input id='slowTimer' type='number' value='1' min='0'style='width: 20px;'> Minutes</label>\`);
+      \$('#slowMode').change(function() {
+          Koviko.options.slowMode=\$(this).is(':checked');
+          localStorage.setItem('slowMode',Koviko.options.slowMode );       
+      });
+
+      \$('#slowTimer').focusout(function() {
+          if(\$(this).val() < 1) {
+              \$(this).val(1);
+          }
+          Koviko.options.slowTimer=\$(this).val();
+          localStorage.setItem('slowTimer', Koviko.options.slowTimer);
+      });
+
+
     }
 
     updateTrackedList() {
@@ -1528,15 +1555,32 @@ const Koviko = {
        * Organize accumulated resources, accumulated stats, and accumulated progress into a single object
        * @var {Koviko.Predictor~State}
        */
-      let state = {
-        resources: { mana: 250, town: 0, guild: "", totalTicks: 0 },
-        stats: Koviko.globals.statList.reduce((stats, name) => (stats[name] = getExpOfLevel(buffs.Imbuement2.amt*(Koviko.globals.skills.Wunderkind.exp>=100?2:1)), stats), {}),
-        talents:  Koviko.globals.statList.reduce((talents, name) => (talents[name] = stats[name].talent, talents), {}),
-        skills: Object.entries(Koviko.globals.skills).reduce((skills, x) => (skills[x[0].toLowerCase()] = x[1].exp, skills), {}),
-        progress: {},
-        currProgress: {}
-      };
+      let state;
+      
+      //"Slowmode means only update the initial state every X Minutes
+      if(Koviko.options.slowMode) {
+        if (this.initState && (new Date()<this.nextUpdate)) {
+          state=structuredClone(this.initState);
+          //console.log("Slowmode - Redraw");
+        } else {
+          this.nextUpdate=new Date(Date.now()+ Koviko.options.slowTimer*1000*60);
+          //console.log("Slowmode - Update Data");
+        }
+      }
 
+      if (!state) {
+        state = {
+          resources: { mana: 250, town: 0, guild: "", totalTicks: 0 },
+          stats: Koviko.globals.statList.reduce((stats, name) => (stats[name] = getExpOfLevel(buffs.Imbuement2.amt*(Koviko.globals.skills.Wunderkind.exp>=100?2:1)), stats), {}),
+          talents:  Koviko.globals.statList.reduce((talents, name) => (talents[name] = stats[name].talent, talents), {}),
+          skills: Object.entries(Koviko.globals.skills).reduce((skills, x) => (skills[x[0].toLowerCase()] = x[1].exp, skills), {}),
+          progress: {},
+          currProgress: {}
+        };
+        if (Koviko.options.slowMode) {
+          this.initState=structuredClone(state);
+        }
+      }
       //Once you Surveyed everything you get free Glasses [Found Glasses]
       if(getExploreProgress() >= 100) {
         state.resources.glasses=true;
@@ -1782,6 +1826,10 @@ const Koviko = {
             div.innerHTML += this.template(listedAction.name, affected, state.resources, snapshots, isValid);
           }          
         }
+      }
+
+      if (!cache) {
+        this.initState=false;
       }
 
       // Update the display for the total amount of mana used by the action list
