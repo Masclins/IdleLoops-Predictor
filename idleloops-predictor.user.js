@@ -591,6 +591,7 @@ const Koviko = {
 
       \$('#actionChanges').children('div:nth-child(2)').append("<select id='trackedStat' class='button'></select>");
       \$('#trackedStat').append("<option value=Rsoul hidden=''>(R) Soulstones</option>");
+      \$('#trackedStat').append("<option value=RsoulNow hidden=''>(R) Soulstones Expected</option>");
       \$('#trackedStat').append("<option value=Ract hidden=''>(R) Final Actions</option>");
       \$('#trackedStat').append("<option value=Rsurvey hidden=''>(R) Surveys</option>");
       \$('#trackedStat').append("<option value=Rinvest hidden=''>(R) Investment</option>");
@@ -903,7 +904,12 @@ const Koviko = {
 
             return floor in  dungeons[a.dungeonNum] ? (h.getSelfCombat(r, k) +  getSkillLevelFromExp(k.magic)) * h.getStatProgress(p, a, s, offset) * Math.sqrt(1 +  dungeons[a.dungeonNum][floor].completed / 200) : 0;
           },
-          effect:{ end:(r, k) => (k.combat += 5*(1+getBuffLevel("Heroism") * 0.02), k.magic += 5), loop:(r) => r.soul+=h.getRewardSS(0)}
+          effect:{ end:(r, k) => (k.combat += 5*(1+getBuffLevel("Heroism") * 0.02), k.magic += 5), loop:(r) => {
+            let ssGained = h.getRewardSS(0);
+            r.completionsSmallDungeon = (r.completionsSmallDungeon || 0) + 1;
+            r.soul += ssGained;
+            r.expectedSS += ssGained * dungeons[0][r.completionsSmallDungeon - 1].ssChance;
+          }}
         }},
         'Buy Supplies':{ affected:['gold'],
           canStart:(input) => input.gold >= 300 - Math.max((input.supplyDiscount || 0) * 20, 0),
@@ -956,7 +962,7 @@ const Koviko = {
         'Dark Magic':{ affected:['rep'],
           canStart:(input) => (input.rep <= 0),
           effect:(r, k) => (r.rep--, k.dark += Math.floor(100 * (1 + buffs.Ritual.amt / 100)))},
-        'Dark Ritual':{ affected:['ritual'],
+        'Dark Ritual':{ affected:['ritual','soul'],
           canStart:(input) => (input.rep <= -5), loop: {
           max:() => 1,
           cost:(p) => segment => 1000000 * (segment * 2 + 1),
@@ -968,8 +974,9 @@ const Koviko = {
           effect:{loop:(r) => {
             r.ritual++;
             let ssCost = Action.DarkRitual.goldCost();
-            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.nonDungeonSS -= ssCost;
             r.soul -= ssCost;
+            r.expectedSS -= ssCost;
           }}
         }},
         'Continue On':{ affected:[''],
@@ -1007,7 +1014,12 @@ const Koviko = {
             let floor = Math.floor(p.completed / a.segments + .0000001);
             return floor in  dungeons[a.dungeonNum] ? (h.getTeamCombat(r, k) +  getSkillLevelFromExp(k.magic)) * h.getStatProgress(p, a, s, offset) * Math.sqrt(1 +  dungeons[a.dungeonNum][floor].completed / 200) : 0;
           },
-          effect:{ end:(r, k) => (k.combat += 15*(1+getBuffLevel("Heroism") * 0.02), k.magic += 15), loop:(r) => r.soul +=h.getRewardSS(1)}
+          effect:{ end:(r, k) => (k.combat += 15*(1+getBuffLevel("Heroism") * 0.02), k.magic += 15), loop:(r) => {
+            let ssGained = h.getRewardSS(1);
+            r.completionsLargeDungeon = (r.completionsLargeDungeon || 0) + 1;
+            r.soul += ssGained;
+            r.expectedSS += ssGained * dungeons[1][r.completionsLargeDungeon - 1].ssChance;
+          }}
         }},
         'Crafting Guild':{ affected:['gold','crafts'],
           canStart:(input) => (input.guild==''), loop: {
@@ -1068,8 +1080,9 @@ const Koviko = {
           effect:(r) => {
           r.temp10 = (r.temp10 || 0) + 1;
           let ssGained = r.temp10 <= towns[3].goodMineSoulstones ? h.getRewardSS(0) : 0;
-          r.nonDungeonSS = (r.nonDungeonSS || 0) + ssGained;
+          r.nonDungeonSS += ssGained;
           r.soul += ssGained;
+          r.expectedSS += ssGained;
         }},
         'Hunt Trolls':{ affected:['blood'], loop: {
           cost:(p, a) => segment =>  precision3(Math.pow(2, Math.floor((p.completed + segment) / a.segments+.0000001)) * 1e6),
@@ -1082,7 +1095,7 @@ const Koviko = {
           r.temp11 = (r.temp11 || 0) + 1;
           r.artifacts += r.temp11 <= towns[3].goodArtifacts ? 1 : 0;
         }},
-        'Imbue Mind':{ affected:['mind'],
+        'Imbue Mind':{ affected:['mind','soul'],
           canStart:true, loop: {
           max:() => 1,
           cost:(p) => segment => 100000000 * (segment * 5 + 1),
@@ -1094,8 +1107,9 @@ const Koviko = {
           effect:{loop:(r) => {
             r.mind++;
             let ssCost = Action.ImbueMind.goldCost();
-            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.nonDungeonSS -= ssCost;
             r.soul -= ssCost;
+            r.expectedSS -= ssCost;
           }}
         }},
         'Imbue Body':{ affected:['body'],
@@ -1217,7 +1231,7 @@ const Koviko = {
           r.favor -= 20;
           r.pegasus = true;
         }},
-        'Great Feast':{ affected:['feast'],
+        'Great Feast':{ affected:['feast','soul'],
           canStart:(input) => (input.rep >= 100), loop: {
           max:() => 1,
           cost:(p) => segment => 1000000000 * (segment * 5 + 1),
@@ -1227,8 +1241,9 @@ const Koviko = {
           effect:{loop:(r) => {
             r.feast++;
             let ssCost = Action.GreatFeast.goldCost();
-            r.nonDungeonSS = (r.nonDungeonSS || 0) - ssCost;
+            r.nonDungeonSS -= ssCost;
             r.soul -= ssCost;
+            r.expectedSS -= ssCost;
           }}
         }},
         'Fight Frost Giants':{ affected:['giants'],
@@ -1288,7 +1303,12 @@ const Koviko = {
                 h.getStatProgress(p, a, s, offset) *
                 Math.sqrt(1 +  dungeons[a.dungeonNum][floor].completed / 200) : 0;
           },
-          effect:{ end:(r,k) => {(k.combat += 100*(1+getBuffLevel("Heroism") * 0.02))}, loop:(r) => r.soul += h.getRewardSS(2)}
+          effect:{ end:(r,k) => {(k.combat += 100*(1+getBuffLevel("Heroism") * 0.02))}, loop:(r) => {
+            let ssGained = h.getRewardSS(2);
+            r.completionsTheSpire = (r.completionsTheSpire || 0) + 1;
+            r.soul += ssGained;
+            r.expectedSS += ssGained * dungeons[2][r.completionsTheSpire - 1].ssChance;
+          }}
         }},
         'Purchase Supplies':{ affected:['gold'],
           canStart:(input) => (input.gold >= 500 && !input.supplies),
@@ -1640,6 +1660,10 @@ const Koviko = {
 
       // Initialize all affected resources
       affected.forEach(x => state.resources[x] || (state.resources[x] = 0));
+      if (affected.includes('soul')) {
+        state.resources.nonDungeonSS = (state.resources.nonDungeonSS || 0)
+        state.resources.expectedSS = (state.resources.expectedSS || 0)
+      } 
 
       // Initialize the display element for the total amount of mana used
       if(container){
@@ -1849,8 +1873,11 @@ const Koviko = {
         case 'R':
           if (Koviko.options.trackedStat[1]=="soul") {
             let dungeonEquilibrium = Math.min(Math.sqrt(total / 200000),1);
-            let dungeonSS = state.resources.soul - (state.resources.nonDungeonSS || 0);
-            newStatisticValue = ((state.resources.nonDungeonSS || 0) + dungeonEquilibrium * (dungeonSS || 0)) / totalTicks * 60;
+            let dungeonSS = state.resources.soul - state.resources.nonDungeonSS;
+            newStatisticValue = (state.resources.nonDungeonSS + dungeonEquilibrium * (dungeonSS || 0)) / totalTicks * 60;
+            legend="SS";
+          } else if (Koviko.options.trackedStat[1]=="soulNow") {
+            newStatisticValue = state.resources.expectedSS / totalTicks * 60;
             legend="SS";
           } else if (Koviko.options.trackedStat[1]=="act") {
             newStatisticValue= loop / totalTicks * 60;
