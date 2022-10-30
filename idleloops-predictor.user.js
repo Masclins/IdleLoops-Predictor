@@ -1849,10 +1849,6 @@ const Koviko = {
         }
       }
 
-      if (!cache) {
-        this.initState=false;
-      }
-
       // Update the display for the total amount of mana used by the action list
       let totalTicks = state.resources.totalTicks
       totalTicks /= 50;
