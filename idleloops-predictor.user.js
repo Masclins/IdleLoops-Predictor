@@ -1747,76 +1747,77 @@ const Koviko = {
             }
 
             // Predict each loop in sequence
-            for (loop; repeatLoop ? isValid : loop < listedAction.loops; loop++) {
-              let canStart = typeof(prediction.canStart) === "function" ? prediction.canStart(state.resources) : prediction.canStart;
-              if (!canStart) { isValid = false; }
-              if ( !canStart || listedAction.disabled ) { break; }
-
-              // Save the mana prior to the prediction
-              currentMana = state.resources.mana;
-
-              // Skip EXP calculations for the last element, when no longer necessary (only costs 1 mana)
-              if ((i==finalIndex) && (prediction.ticks()==1) &&(!prediction.loop) &&(loop>0)) {
-                state.resources.mana--;
-              } else if (prediction.loop && prediction.loop.max &&((prediction.loop.max(prediction.action)*prediction.action.segments)<=state.progress[prediction.name].completed)) {
-                break;
-              } else {
-                // Run the prediction
-                this.predict(prediction, state);
-              }
-
-              // Check if the amount of mana used was too much
-              isValid = isValid && state.resources.mana >= 0;
-
-              // Only for Adventure Guild
-              if ( listedAction.name == "Adventure Guild" ) {
-                state.resources.mana -= state.resources.adventures * 200;
-              }
-
-              // Calculate the total amount of mana used in the prediction and add it to the total
-              total += currentMana - state.resources.mana;
-
-
-
-              // Calculate time spent
-              let temp = (currentMana - state.resources.mana) / getSpeedMult(state.resources.town);
-              state.resources.totalTicks += temp;
-              state.resources.actionTicks+=temp;
-
-              // Only for Adventure Guild
-              if ( listedAction.name == "Adventure Guild" ) {
-                state.resources.mana += state.resources.adventures * 200;
-              }
-
-              if (repeatLoop&& !isValid) {break;}
-
-              // Run the effect, now that the mana checks are complete
-              if (prediction.effect) {
-                prediction.effect(state.resources, state.skills);
-              }
-              if (prediction.loop) {
-                if (prediction.loop.effect.end) {
-                  prediction.loop.effect.end(state.resources, state.skills);
+            if (isValid) {
+              for (loop; repeatLoop ? isValid : loop < listedAction.loops; loop++) {
+                let canStart = typeof(prediction.canStart) === "function" ? prediction.canStart(state.resources) : prediction.canStart;
+                if (!canStart) { isValid = false; }
+                if ( !canStart || listedAction.disabled ) { break; }
+			
+                // Save the mana prior to the prediction
+                currentMana = state.resources.mana;
+			
+                // Skip EXP calculations for the last element, when no longer necessary (only costs 1 mana)
+                if ((i==finalIndex) && (prediction.ticks()==1) &&(!prediction.loop) &&(loop>0)) {
+                  state.resources.mana--;
+                } else if (prediction.loop && prediction.loop.max &&((prediction.loop.max(prediction.action)*prediction.action.segments)<=state.progress[prediction.name].completed)) {
+                  break;
+                } else {
+                  // Run the prediction
+                  this.predict(prediction, state);
+                }
+			
+                // Check if the amount of mana used was too much
+                isValid = isValid && state.resources.mana >= 0;
+			
+                // Only for Adventure Guild
+                if ( listedAction.name == "Adventure Guild" ) {
+                  state.resources.mana -= state.resources.adventures * 200;
+                }
+			
+                // Calculate the total amount of mana used in the prediction and add it to the total
+                total += currentMana - state.resources.mana;
+			
+			
+			
+                // Calculate time spent
+                let temp = (currentMana - state.resources.mana) / getSpeedMult(state.resources.town);
+                state.resources.totalTicks += temp;
+                state.resources.actionTicks+=temp;
+			
+                // Only for Adventure Guild
+                if ( listedAction.name == "Adventure Guild" ) {
+                  state.resources.mana += state.resources.adventures * 200;
+                }
+			
+                if (repeatLoop&& !isValid) {break;}
+			
+                // Run the effect, now that the mana checks are complete
+                if (prediction.effect) {
+                  prediction.effect(state.resources, state.skills);
+                }
+                if (prediction.loop) {
+                  if (prediction.loop.effect.end) {
+                    prediction.loop.effect.end(state.resources, state.skills);
+                  }
+                }
+			
+                // Add to cache 90% through the final action
+                if(i==finalIndex && loop === Math.floor(listedAction.loops * 0.9)){
+                  let key = [listedAction.name, listedAction.disabled];
+                  key['last'] = true;
+                  this.cache.add(key, [state, loop + 1, total, isValid]);
+                }
+			
+                // Sleep every 100ms to avoid hanging the game
+                if(Date.now() % 100 === 0){
+                  await new Promise(r => setTimeout(r, 1));
+			
+                  // If id != update.id, then another update was triggered and we need to stop processing this one
+                  if(id != this.update.id) {
+                    return;
+                  }
                 }
               }
-
-              // Add to cache 90% through the final action
-              if(i==finalIndex && loop === Math.floor(listedAction.loops * 0.9)){
-                let key = [listedAction.name, listedAction.disabled];
-                key['last'] = true;
-                this.cache.add(key, [state, loop + 1, total, isValid]);
-              }
-
-              // Sleep every 100ms to avoid hanging the game
-              if(Date.now() % 100 === 0){
-                await new Promise(r => setTimeout(r, 1));
-
-                // If id != update.id, then another update was triggered and we need to stop processing this one
-                if(id != this.update.id) {
-                  return;
-                }
-              }
-
             }
 
             if (repeatLoop&& loop>=listedAction.loops) {
