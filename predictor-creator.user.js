@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name     Predictor Creator
-// @version  1.1.1
+// @version  1.1.2
 // @description Author script for the predictor. To use: 1.call crUpdatePredictions in the console 2. copy the result into the script, replacing everything between the "CACHE File" markers 3. Fix any TODOs in the copied cache, those are actions that changed and (maybe) need attention, if a function shouldn't be in the output replace it with '' (or\`\`) 4. call crOutputPredictions 5. paste the output into the main script, replacing the content of the "predictions" object EXEPT those after "SPECIAL ACTIONS" those are special cases that should be done by hand  // @match https://lloyd-delacroix.github.io/omsi-loops/
 // @author Tomnar <Tomnar#4672 on discord>
 // @match https://lloyd-delacroix.github.io/omsi-loops/
@@ -621,7 +621,7 @@ creatorCache['Heal The Sick'].loop.loop.game=\`loopsFinished() {
         addResource("reputation", 3);
     }\`;
 creatorCache['Heal The Sick'].loop.loop.pred=\`(r) => r.rep += 3\`;
-creatorCache['Heal The Sick'].loop.max=\`()=>1 //TODO: check if cap relevant, replace with empty String otherwise\`;
+creatorCache['Heal The Sick'].loop.max=\`\`;
 creatorCache['Fight Monsters']={};
 creatorCache['Fight Monsters'].affected=['gold'];
 creatorCache['Fight Monsters'].canStart={};
@@ -657,7 +657,7 @@ creatorCache['Fight Monsters'].loop.loop.game=\`loopsFinished() {
         // empty
     }\`;
 creatorCache['Fight Monsters'].loop.loop.pred=\`\`;
-creatorCache['Fight Monsters'].loop.max=\`()=>1 //TODO: check if cap relevant, replace with empty String otherwise\`;
+creatorCache['Fight Monsters'].loop.max=\`\`;
 creatorCache['Small Dungeon']={};
 creatorCache['Small Dungeon'].affected=['soul'];
 creatorCache['Small Dungeon'].canStart={};
@@ -702,7 +702,12 @@ creatorCache['Small Dungeon'].loop.loop.game=\`loopsFinished() {
             unlockGlobalStory(2);
         }
     }\`;
-creatorCache['Small Dungeon'].loop.loop.pred=\`(r) => r.soul+=h.getRewardSS(0)\`;
+creatorCache['Small Dungeon'].loop.loop.pred=\`(r) => {
+            let ssGained = h.getRewardSS(0);
+            r.completionsSmallDungeon = (r.completionsSmallDungeon || 0) + 1;
+            r.soul += ssGained;
+            r.expectedSS += ssGained * dungeons[0][r.completionsSmallDungeon - 1].ssChance;
+          }\`;
 creatorCache['Small Dungeon'].loop.max=\`(a) =>  dungeons[a.dungeonNum].length\`;
 creatorCache['Buy Supplies']={};
 creatorCache['Buy Supplies'].affected=['gold'];
@@ -1233,7 +1238,12 @@ creatorCache['Large Dungeon'].loop.loop.game=\`loopsFinished() {
         const curFloor = Math.floor((towns[this.townNum].LDungeonLoopCounter) / this.segments + 0.0000001 - 1);
         finishDungeon(this.dungeonNum, curFloor);
     }\`;
-creatorCache['Large Dungeon'].loop.loop.pred=\`(r) => r.soul +=h.getRewardSS(1)\`;
+creatorCache['Large Dungeon'].loop.loop.pred=\`(r) => {
+            let ssGained = h.getRewardSS(1);
+            r.completionsLargeDungeon = (r.completionsLargeDungeon || 0) + 1;
+            r.soul += ssGained;
+            r.expectedSS += ssGained * dungeons[1][r.completionsLargeDungeon - 1].ssChance;
+          }\`;
 creatorCache['Large Dungeon'].loop.max=\`(a) =>  dungeons[a.dungeonNum].length\`;
 creatorCache['Crafting Guild']={};
 creatorCache['Crafting Guild'].affected=['gold','crafts'];
@@ -1604,7 +1614,7 @@ creatorCache['Hunt Trolls'].loop.loop.game=\`loopsFinished() {
         if (resources.blood >= 20) unlockStory("slay20TrollsInALoop");
     }\`;
 creatorCache['Hunt Trolls'].loop.loop.pred=\`(r, k) => (r.blood++, k.combat += 1000*(1+getBuffLevel("Heroism") * 0.02))\`;
-creatorCache['Hunt Trolls'].loop.max=\`()=>1 //TODO: check if cap relevant, replace with empty String otherwise\`;
+creatorCache['Hunt Trolls'].loop.max=\`\`;
 creatorCache['Check Walls']={};
 creatorCache['Check Walls'].affected=[''];
 creatorCache['Check Walls'].effect={};
@@ -2005,7 +2015,7 @@ creatorCache['Wizard College'].loop.loop.game=\`loopsFinished() {
         // empty.
     }\`;
 creatorCache['Wizard College'].loop.loop.pred=\`\`;
-creatorCache['Wizard College'].loop.max=\`()=>1 //TODO: check if cap relevant, replace with empty String otherwise\`;
+creatorCache['Wizard College'].loop.max=\`\`;
 creatorCache['Restoration']={};
 creatorCache['Restoration'].affected=[''];
 creatorCache['Restoration'].manaCost={};
@@ -2137,7 +2147,7 @@ creatorCache['Great Feast'].loop.loop.game=\`loopsFinished() {
         view.requestUpdate("updateSoulstones", null);
         view.requestUpdate("adjustGoldCost", {varName: "GreatFeast", cost: this.goldCost()});
     }\`;
-creatorCache['Great Feast'].loop.loop.pred=\`effect:{loop:(r) => {
+creatorCache['Great Feast'].loop.loop.pred=\`(r) => {
             r.feast++;
             let ssCost = Action.GreatFeast.goldCost();
             r.nonDungeonSS -= ssCost;
@@ -2347,7 +2357,12 @@ creatorCache['The Spire'].loop.loop.game=\`loopsFinished() {
         finishDungeon(this.dungeonNum, curFloor);
         if (curFloor >= getBuffLevel("Aspirant")) addBuffAmt("Aspirant", 1);
     }\`;
-creatorCache['The Spire'].loop.loop.pred=\`(r) => r.soul += h.getRewardSS(2)\`;
+creatorCache['The Spire'].loop.loop.pred=\`(r) => {
+            let ssGained = h.getRewardSS(2);
+            r.completionsTheSpire = (r.completionsTheSpire || 0) + 1;
+            r.soul += ssGained;
+            r.expectedSS += ssGained * dungeons[2][r.completionsTheSpire - 1].ssChance;
+          }\`;
 creatorCache['The Spire'].loop.max=\`(a) =>  dungeons[a.dungeonNum].length\`;
 creatorCache['Purchase Supplies']={};
 creatorCache['Purchase Supplies'].affected=['gold'];
@@ -2470,7 +2485,7 @@ creatorCache['Fight Jungle Monsters'].loop.loop.game=\`loopsFinished() {
         handleSkillExp(this.skills);
     }\`;
 creatorCache['Fight Jungle Monsters'].loop.loop.pred=\`(r,k)=> (k.combat+=2000*(1+getBuffLevel("Heroism") * 0.02))\`;
-creatorCache['Fight Jungle Monsters'].loop.max=\`()=>1 //TODO: check if cap relevant, replace with empty String otherwise\`;
+creatorCache['Fight Jungle Monsters'].loop.max=\`\`;
 creatorCache['Rescue Survivors']={};
 creatorCache['Rescue Survivors'].affected=[''];
 creatorCache['Rescue Survivors'].canStart={};
@@ -2655,7 +2670,7 @@ creatorCache['Thieves Guild'].loop.loop={};
 creatorCache['Thieves Guild'].loop.loop.game=\`loopsFinished() {
     }\`;
 creatorCache['Thieves Guild'].loop.loop.pred=\`\`;
-creatorCache['Thieves Guild'].loop.max=\`()=>1 //TODO: check if cap relevant, replace with empty String otherwise\`;
+creatorCache['Thieves Guild'].loop.max=\`\`;
 creatorCache['Pick Pockets']={};
 creatorCache['Pick Pockets'].affected=[''];
 creatorCache['Pick Pockets'].canStart={};

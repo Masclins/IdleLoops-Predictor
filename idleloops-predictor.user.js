@@ -2,7 +2,7 @@
 // @name         IdleLoops Predictor Makro
 // @namespace    https://github.com/MakroCZ/
 // @downloadURL  https://raw.githubusercontent.com/MakroCZ/IdleLoops-Predictor/master/idleloops-predictor.user.js
-// @version      2.3.7
+// @version      2.3.8
 // @description  Predicts the amount of resources spent and gained by each action in the action list. Valid as of IdleLoops v.85/Omsi6.
 // @author       Koviko <koviko.net@gmail.com>
 // @match        https://lloyd-delacroix.github.io/omsi-loops/
@@ -976,7 +976,6 @@ const Koviko = {
             let ssCost = Action.DarkRitual.goldCost();
             r.nonDungeonSS -= ssCost;
             r.soul -= ssCost;
-            r.expectedSS -= ssCost;
           }}
         }},
         'Continue On':{ affected:[''],
@@ -1082,7 +1081,6 @@ const Koviko = {
           let ssGained = r.temp10 <= towns[3].goodMineSoulstones ? h.getRewardSS(0) : 0;
           r.nonDungeonSS += ssGained;
           r.soul += ssGained;
-          r.expectedSS += ssGained;
         }},
         'Hunt Trolls':{ affected:['blood'], loop: {
           cost:(p, a) => segment =>  precision3(Math.pow(2, Math.floor((p.completed + segment) / a.segments+.0000001)) * 1e6),
@@ -1109,7 +1107,6 @@ const Koviko = {
             let ssCost = Action.ImbueMind.goldCost();
             r.nonDungeonSS -= ssCost;
             r.soul -= ssCost;
-            r.expectedSS -= ssCost;
           }}
         }},
         'Imbue Body':{ affected:['body'],
@@ -1243,7 +1240,6 @@ const Koviko = {
             let ssCost = Action.GreatFeast.goldCost();
             r.nonDungeonSS -= ssCost;
             r.soul -= ssCost;
-            r.expectedSS -= ssCost;
           }}
         }},
         'Fight Frost Giants':{ affected:['giants'],
@@ -1877,8 +1873,8 @@ const Koviko = {
             newStatisticValue = (state.resources.nonDungeonSS + dungeonEquilibrium * (dungeonSS || 0)) / totalTicks * 60;
             legend="SS";
           } else if (Koviko.options.trackedStat[1]=="soulNow") {
-            newStatisticValue = state.resources.expectedSS / totalTicks * 60;
-            legend="SS";
+            newStatisticValue = (state.resources.expectedSS+state.resources.nonDungeonSS) / totalTicks * 60;
+            legend="SS Expected";
           } else if (Koviko.options.trackedStat[1]=="act") {
             newStatisticValue= loop / totalTicks * 60;
             legend=actions[finalIndex].name;
