@@ -2,7 +2,7 @@
 // @name         IdleLoops Predictor Makro
 // @namespace    https://github.com/MakroCZ/
 // @downloadURL  https://raw.githubusercontent.com/MakroCZ/IdleLoops-Predictor/master/idleloops-predictor.user.js
-// @version      2.3.9
+// @version      2.4.0
 // @description  Predicts the amount of resources spent and gained by each action in the action list. Valid as of IdleLoops v.85/Omsi6.
 // @author       Koviko <koviko.net@gmail.com>
 // @match        https://lloyd-delacroix.github.io/omsi-loops/
@@ -875,7 +875,7 @@ const Koviko = {
           r.rep += r.temp4 <= towns[0].goodLQuests ? 1 : 0;
         }},
         'Throw Party':{ affected:['rep'],
-          canStart:true,
+          canStart:(input)=>(input.rep>=2),
           effect:(r,k) => r.rep-=2},
         'Warrior Lessons':{ affected:[''],
           canStart:(input) => input.rep >= 2,
@@ -2001,7 +2001,7 @@ const Koviko = {
           if (level.end>level.start) {
             tooltip += '</b></td><td>' + intToString(level.end, 1) + '</td><td>(+' + intToString(level.end - level.start, 1) + ')</td></tr>';
           } else {
-            tooltip += '<td>' +Math.floor(skills[i].delta/(level.end+1)*1000)/1000 +'%</td><td><' + intToString(skills[i].delta, 1) + ' XP></td></tr>';
+            tooltip += '<td>' +Math.floor(skills[i].delta/(level.end+1)*100)/100 +'%</td><td><' + intToString(skills[i].delta, 1) + '></td></tr>';
           }
         }
       }

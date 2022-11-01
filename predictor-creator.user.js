@@ -552,7 +552,7 @@ creatorCache['Throw Party'].canStart={};
 creatorCache['Throw Party'].canStart.game=\`canStart() {
         return resources.reputation >= 2;
     }\`;
-creatorCache['Throw Party'].canStart.pred=\`true\`;
+creatorCache['Throw Party'].canStart.pred=\`(input)=>(input.rep>=2)\`;
 creatorCache['Throw Party'].effect={};
 creatorCache['Throw Party'].effect.cost=\`cost() {
         addResource("reputation", -2);
