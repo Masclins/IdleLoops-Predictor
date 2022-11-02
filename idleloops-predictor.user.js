@@ -407,10 +407,10 @@ const Koviko = {
         let tmpVal=localStorage.getItem("trackedStat");
         if (tmpVal && Koviko.options.trackedStat !== null) {
           \$('#trackedStat').val(tmpVal);
-          Koviko.options.trackedStat=[tmpVal.charAt(0),tmpVal.slice(1)];
+          Koviko.options.trackedStat=Koviko.trackedStats[tmpVal];
         } else {
           \$('#trackedStat').val('Rsoul');
-          Koviko.options.trackedStat=['R','soul'];
+          Koviko.options.trackedStat=Koviko.trackedStats['Rsoul'];
           localStorage.setItem('trackedStat', 'Rsoul');
         }
 
@@ -589,23 +589,30 @@ const Koviko = {
           Koviko.options.repeatPrediction=\$(this).is(':checked');
           localStorage.setItem('repeatPrediction',Koviko.options.repeatPrediction );
       });
-
-      \$('#actionChanges').children('div:nth-child(2)').append("<select id='trackedStat' class='button'></select>");
-      \$('#trackedStat').append("<option value=Rsoul hidden=''>(R) Soulstones</option>");
-      \$('#trackedStat').append("<option value=RsoulNow hidden=''>(R) SS Expected</option>");
-      \$('#trackedStat').append("<option value=Ract hidden=''>(R) Final Actions</option>");
-      \$('#trackedStat').append("<option value=Rsurvey hidden=''>(R) Surveys</option>");
-      \$('#trackedStat').append("<option value=Rinvest hidden=''>(R) Investment</option>");
-      for (let i in skillList) {
-        \$('#trackedStat').append("<option value=S"+skillList[i].toLowerCase()+" hidden=''>(S) "+skillList[i]+"</option>");
+      Koviko.trackedStats = [
+        {type:'R', name:'soul', display_name:'Soulstones'},
+        {type:'R', name:'soulNow', display_name:'SS Expected'},
+        {type:'R', name:'act', display_name:'Final Actions'},
+        {type:'R', name:'survey', display_name:'Surveys', hidden:()=>(getExploreSkill()==0)},
+        {type:'R', name:'invest', display_name:'Investment', hidden:()=>(goldInvested==0)},
+      ].reduce(
+        (dict, el, index) => (dict[el.type + el.name] = el, dict),
+        {}
+      );
+      for (const skill of skillList) {
+        Koviko.trackedStats['S'+skill.toLowerCase()] = {type:'S', name:skill.toLowerCase(), display_name:skill, hidden:()=>(!skills[skill].exp>0)}
       }
-      for (let i in statList) {
-        \$('#trackedStat').append("<option value=T"+statList[i]+" >(T) "+_txt('stats>'+statList[i]+'>long_form')+"</option>");
+      for (const stat of statList) {
+        Koviko.trackedStats['T'+stat] = {type:'T', name:stat, display_name:_txt('stats>'+stat+'>long_form')}
+      }
+      \$('#actionChanges').children('div:nth-child(2)').append("<select id='trackedStat' class='button'></select>");
+      for (const [key, stat] of Object.entries(Koviko.trackedStats)) {
+        \$('#trackedStat').append("<option value="+key+" hidden=''>("+stat.type+") "+stat.display_name+"</option>");
       }
       \$('#trackedStat').change(function() {
         let tmpVal=\$(this).val();
         localStorage.setItem('trackedStat',tmpVal);
-        Koviko.options.trackedStat=[tmpVal.charAt(0),tmpVal.slice(1)];
+        Koviko.options.trackedStat=Koviko.trackedStats[tmpVal];
         view.updateNextActions();
       });
       this.updateTrackedList();
@@ -629,22 +636,12 @@ const Koviko = {
 
     updateTrackedList() {
       let statisticList = $("#trackedStat").children();
-        for (let i=0;i<statisticList.length;i++) {
-          switch(statisticList[i].value.charAt(0)) {
-            case 'R':
-              if (statisticList[i].value=="Rsurvey") {
-                statisticList[i].hidden= (getExploreSkill()==0);
-              } else if (statisticList[i].value=="Rinvest") {
-                statisticList[i].hidden= (goldInvested==0);
-              } else {
-                statisticList[i].hidden=false;
-              }
-              break;
-            case 'S':
-              statisticList[i].hidden=(!skills[statisticList[i].value.charAt(1).toUpperCase()+statisticList[i].value.slice(2)].exp>0);
-              break;
-            case 'T':
-              break;
+        for (const statistic of statisticList) {
+          let trackedStat = Koviko.trackedStats[statistic.value];
+          if(trackedStat && trackedStat.hidden) {
+            statistic.hidden = trackedStat.hidden();
+          } else {
+            statistic.hidden = false;
           }
         }
     }
@@ -1644,14 +1641,14 @@ const Koviko = {
       //Statistik parammeters
       let statisticStart=0;
       let newStatisticValue=0;
-      switch(Koviko.options.trackedStat[0]) {
+      switch(Koviko.options.trackedStat.type) {
         case 'R':
           break;
         case 'S':
-          statisticStart=state.skills[Koviko.options.trackedStat[1]];
+          statisticStart=state.skills[Koviko.options.trackedStat.name];
           break;
         case 'T':
-          statisticStart=state.talents[Koviko.options.trackedStat[1]];
+          statisticStart=state.talents[Koviko.options.trackedStat.name];
           break;
       }
 
@@ -1863,34 +1860,34 @@ const Koviko = {
 
       let legend="";
 
-      switch(Koviko.options.trackedStat[0]) {
+      switch(Koviko.options.trackedStat.type) {
         case 'R':
-          if (Koviko.options.trackedStat[1]=="soul") {
+          if (Koviko.options.trackedStat.name=="soul") {
             let dungeonEquilibrium = Math.min(Math.sqrt(total / 200000),1);
             let dungeonSS = state.resources.soul - state.resources.nonDungeonSS;
             newStatisticValue = (state.resources.nonDungeonSS + dungeonEquilibrium * (dungeonSS || 0)) / totalTicks * 60;
             legend="SS";
-          } else if (Koviko.options.trackedStat[1]=="soulNow") {
+          } else if (Koviko.options.trackedStat.name=="soulNow") {
             newStatisticValue = (state.resources.expectedSS+state.resources.nonDungeonSS) / totalTicks * 60;
             legend="SS Expected";
-          } else if (Koviko.options.trackedStat[1]=="act") {
+          } else if (Koviko.options.trackedStat.name=="act") {
             newStatisticValue= loop / totalTicks * 60;
             legend=actions[finalIndex].name;
-          } else if (Koviko.options.trackedStat[1]=="survey") {
+          } else if (Koviko.options.trackedStat.name=="survey") {
             newStatisticValue= getExploreSkill()* (state.resources.completedMap+3*state.resources.submittedMap)  / totalTicks * 60;
             legend="Survey";
-          } else if (Koviko.options.trackedStat[1]=="invest") {
+          } else if (Koviko.options.trackedStat.name=="invest") {
             newStatisticValue= state.resources.invested / totalTicks * 60;
             legend="Investment";
           }
           break;
         case 'S':
-          newStatisticValue=(state.skills[Koviko.options.trackedStat[1]]-statisticStart)/ totalTicks * 60;
-          legend=this.getShortSkill(Koviko.options.trackedStat[1]);
+          newStatisticValue=(state.skills[Koviko.options.trackedStat.name]-statisticStart)/ totalTicks * 60;
+          legend=this.getShortSkill(Koviko.options.trackedStat.name);
           break;
         case 'T':
-          newStatisticValue=(state.talents[Koviko.options.trackedStat[1]]-statisticStart)/ totalTicks * 60;
-          legend=_txt('stats>'+Koviko.options.trackedStat[1]+'>short_form');
+          newStatisticValue=(state.talents[Koviko.options.trackedStat.name]-statisticStart)/ totalTicks * 60;
+          legend=_txt('stats>'+Koviko.options.trackedStat.name+'>short_form');
           break;
       }
 
