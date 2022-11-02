@@ -405,12 +405,13 @@ const Koviko = {
           \$('#repeatPrediction').prop( "checked", Koviko.options.repeatPrediction);
         }
         let tmpVal=localStorage.getItem("trackedStat");
-        if (Koviko.options.trackedStat !== null) {
+        if (tmpVal && Koviko.options.trackedStat !== null) {
           \$('#trackedStat').val(tmpVal);
           Koviko.options.trackedStat=[tmpVal.charAt(0),tmpVal.slice(1)];
         } else {
           \$('#trackedStat').val('Rsoul');
           Koviko.options.trackedStat=['R','soul'];
+          localStorage.setItem('trackedStat', 'Rsoul');
         }
 
         Koviko.options.slowMode=localStorage.getItem("slowMode")=='true';
