@@ -1847,8 +1847,7 @@ const Koviko = {
         }
       }
 
-      let totalTicks = state.resources.totalTicks
-      totalTicks /= 50;
+      let totalMinutes = state.resources.totalTicks / 50 / 60
 
       let legend="";
 
@@ -1857,28 +1856,28 @@ const Koviko = {
           if (Koviko.options.trackedStat.name=="soul") {
             let dungeonEquilibrium = Math.min(Math.sqrt(total / 200000),1);
             let dungeonSS = state.resources.soul - state.resources.nonDungeonSS;
-            newStatisticValue = (state.resources.nonDungeonSS + dungeonEquilibrium * (dungeonSS || 0)) / totalTicks * 60;
+            newStatisticValue = (state.resources.nonDungeonSS + dungeonEquilibrium * (dungeonSS || 0)) / totalMinutes;
             legend="SS";
           } else if (Koviko.options.trackedStat.name=="soulNow") {
-            newStatisticValue = (state.resources.expectedSS+state.resources.nonDungeonSS) / totalTicks * 60;
+            newStatisticValue = (state.resources.expectedSS+state.resources.nonDungeonSS) / totalMinutes;
             legend="SS Expected";
           } else if (Koviko.options.trackedStat.name=="act") {
-            newStatisticValue= loop / totalTicks * 60;
+            newStatisticValue= loop / totalMinutes;
             legend=actions[finalIndex].name;
           } else if (Koviko.options.trackedStat.name=="survey") {
-            newStatisticValue= getExploreSkill()* (state.resources.completedMap+3*state.resources.submittedMap)  / totalTicks * 60;
+            newStatisticValue= getExploreSkill()* (state.resources.completedMap+3*state.resources.submittedMap)  / totalMinutes;
             legend="Survey";
           } else if (Koviko.options.trackedStat.name=="invest") {
-            newStatisticValue= state.resources.invested / totalTicks * 60;
+            newStatisticValue= state.resources.invested / totalMinutes;
             legend="Investment";
           }
           break;
         case 'S':
-          newStatisticValue=(state.skills[Koviko.options.trackedStat.name]-statisticStart)/ totalTicks * 60;
+          newStatisticValue=(state.skills[Koviko.options.trackedStat.name]-statisticStart)/ totalMinutes;
           legend=this.getShortSkill(Koviko.options.trackedStat.name);
           break;
         case 'T':
-          newStatisticValue=(state.talents[Koviko.options.trackedStat.name]-statisticStart)/ totalTicks * 60;
+          newStatisticValue=(state.talents[Koviko.options.trackedStat.name]-statisticStart)/ totalMinutes;
           legend=_txt('stats>'+Koviko.options.trackedStat.name+'>short_form');
           break;
       }
