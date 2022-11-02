@@ -1847,16 +1847,8 @@ const Koviko = {
         }
       }
 
-      // Update the display for the total amount of mana used by the action list
       let totalTicks = state.resources.totalTicks
       totalTicks /= 50;
-      var h = Math.floor(totalTicks / 3600);
-      var m = Math.floor(totalTicks % 3600 / 60);
-      var s = Math.floor(totalTicks % 3600 % 60);
-      var ms = Math.floor(totalTicks % 1 * Math.pow(10,Koviko.options.timePrecision));
-      while(ms.toString().length < Koviko.options.timePrecision) { ms = "0" + ms; }
-
-      let totalTime = ('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2) + "." + ms;
 
       let legend="";
 
@@ -1892,7 +1884,8 @@ const Koviko = {
       }
 
 
-      container && (this.totalDisplay.innerHTML = intToString(total) + " | " + totalTime + " | " );
+      // Update the display for the total amount of mana used by the action list
+      container && (this.totalDisplay.innerHTML = intToString(total) + " | " + this.timeString(state.resources.totalTicks) + " | " );
       container && (this.statisticDisplay.innerHTML = intToString(newStatisticValue||0) +" "+legend+ "/min");
       if (this.resourcePerMinute>newStatisticValue) {
         this.statisticDisplay.style='color: #FF0000';
@@ -1916,6 +1909,17 @@ const Koviko = {
 
       // Fire an event when a prediction finishes for other scripts to hook into
       document.dispatchEvent(new Event('predictor-update'));
+    }
+
+    timeString(ticks) {
+      let seconds = ticks / 50;
+      let h = Math.floor(seconds / 3600);
+      let m = Math.floor(seconds % 3600 / 60);
+      let s = Math.floor(seconds % 3600 % 60);
+      let ms = Math.floor(seconds % 1 * Math.pow(10,Koviko.options.timePrecision));
+      while(ms.toString().length < Koviko.options.timePrecision) { ms = "0" + ms; }
+
+      return ('0' + h).slice(-2) + ":" + ('0' + m).slice(-2) + ":" + ('0' + s).slice(-2) + "." + ms;
     }
 
     getShortSkill(name) {
