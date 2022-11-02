@@ -595,6 +595,7 @@ const Koviko = {
         {type:'R', name:'act', display_name:'Final Actions'},
         {type:'R', name:'survey', display_name:'Surveys', hidden:()=>(getExploreSkill()==0)},
         {type:'R', name:'invest', display_name:'Investment', hidden:()=>(goldInvested==0)},
+        {type:'TIME', name:'tillKey', display_name:'Till Key', hidden:()=>(goldInvested==0)},
       ].reduce(
         (dict, el, index) => (dict[el.type + el.name] = el, dict),
         {}
@@ -1872,6 +1873,18 @@ const Koviko = {
             legend="Investment";
           }
           break;
+        case 'TIME':
+          if (Koviko.options.trackedStat.name=="tillKey") {
+            let goldTillKey = 1000000;
+            let i_rate = 0.001;
+            // This is a re-arranged 'compound interest with contributions' formula solving for the number of iterations
+            // required to reach \`goldTillKey / i_rate\`, when you can collect enough gold from interest.
+            // The actual implementation rounds your interest each loop, so this is slightly innacurate.
+            let loopsNeeded = Math.log((goldTillKey + state.resources.invested)/(goldInvested*i_rate + state.resources.invested))/Math.log(i_rate + 1);
+            newStatisticValue= loopsNeeded * state.resources.totalTicks; // Estimate of total ticks until we can buy the key
+            legend="till key";
+          }
+          break;
         case 'S':
           newStatisticValue=(state.skills[Koviko.options.trackedStat.name]-statisticStart)/ totalMinutes;
           legend=this.getShortSkill(Koviko.options.trackedStat.name);
@@ -1885,7 +1898,14 @@ const Koviko = {
 
       // Update the display for the total amount of mana used by the action list
       container && (this.totalDisplay.innerHTML = intToString(total) + " | " + this.timeString(state.resources.totalTicks) + " | " );
-      container && (this.statisticDisplay.innerHTML = intToString(newStatisticValue||0) +" "+legend+ "/min");
+      switch(Koviko.options.trackedStat.type) {
+        case 'TIME':
+          container && (this.statisticDisplay.innerHTML = this.timeString(newStatisticValue||0) + " " + legend);
+          break;
+        default:
+          container && (this.statisticDisplay.innerHTML = intToString(newStatisticValue||0) + " " + legend + "/min");
+      }
+
       if (this.resourcePerMinute>newStatisticValue) {
         this.statisticDisplay.style='color: #FF0000';
       } else {
