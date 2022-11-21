@@ -2511,6 +2511,8 @@ creatorCache['Rescue Survivors'].loop.end.game=\`finish() {
         handleSkillExp(this.skills);
     }\`;
 creatorCache['Rescue Survivors'].loop.end.pred=\`(r,k) => { (k.restoration += 25*(1+getBuffLevel("Heroism") * 0.02))}\`;
+creatorCache['Rescue Survivors'].loop.segment={};
+creatorCache['Rescue Survivors'].loop.segment.pred=\`(r,k) => (r.survivor= (r.survivor||0)+1)\`;
 creatorCache['Rescue Survivors'].loop.loop={};
 creatorCache['Rescue Survivors'].loop.loop.game=\`loopsFinished() {
         addResource("reputation", 4);

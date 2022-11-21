@@ -2,7 +2,7 @@
 // @name         IdleLoops Predictor Makro
 // @namespace    https://github.com/MakroCZ/
 // @downloadURL  https://raw.githubusercontent.com/MakroCZ/IdleLoops-Predictor/master/idleloops-predictor.user.js
-// @version      2.4.2
+// @version      2.4.3
 // @description  Predicts the amount of resources spent and gained by each action in the action list. Valid as of IdleLoops v.85/Omsi6.
 // @author       Koviko <koviko.net@gmail.com>
 // @match        https://lloyd-delacroix.github.io/omsi-loops/
@@ -590,8 +590,8 @@ const Koviko = {
           localStorage.setItem('repeatPrediction',Koviko.options.repeatPrediction );
       });
       Koviko.trackedStats = [
-        {type:'R', name:'soul', display_name:'Soulstones'},
-        {type:'R', name:'soulNow', display_name:'SS Expected'},
+        {type:'R', name:'soul', display_name:'SS Equi %'},
+        {type:'R', name:'soulNow', display_name:'SS Curr %'},
         {type:'R', name:'act', display_name:'Final Actions'},
         {type:'R', name:'survey', display_name:'Surveys', hidden:()=>(getExploreSkill()==0)},
         {type:'R', name:'invest', display_name:'Investment', hidden:()=>(goldInvested==0)},
@@ -1340,7 +1340,7 @@ const Koviko = {
           canStart:true, loop: {
           cost:(p, a) => segment =>  fibonacci(2 + Math.floor((p.completed + segment) / a.segments + .0000001)) * 5000,
           tick:(p, a, s, k) => offset =>  getSkillLevelFromExp(k.magic) * Math.max( getSkillLevelFromExp(k.restoration) / 100, 1) * h.getStatProgress(p, a, s, offset) * Math.sqrt(1 + p.total / 100),
-          effect:{ end:(r,k) => { (k.restoration += 25*(1+getBuffLevel("Heroism") * 0.02))}, loop:(r) => (r.survivor= (r.survivor||0)+1,r.rep+=4)}
+          effect:{ end:(r,k) => { (k.restoration += 25*(1+getBuffLevel("Heroism") * 0.02))}, segment:(r,k) => (r.survivor= (r.survivor||0)+1), loop:(r) => (r.rep+=4)}
         }},
         'Prepare Buffet':{ affected:['herbs','blood'],
           canStart:(input) => ((input.herbs>=10) && (input.blood>=1)),
